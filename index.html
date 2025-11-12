@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Icon Library: Lucide.dev -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Removed Firebase CDN (using localStorage auth instead) -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -26,12 +27,74 @@
             text-decoration: line-through;
             color: #9ca3af; /* gray-400 */
         }
+        /* Animasi On-Scroll untuk Card */
+        .fade-in-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Mobile Sidebar Styling */
+        .sidebar-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+        }
+        .sidebar-toggle span {
+            width: 25px;
+            height: 3px;
+            background-color: #4f46e5;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            .sidebar-toggle {
+                display: flex;
+            }
+            aside {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 40;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                width: 250px !important;
+            }
+            aside.mobile-open {
+                transform: translateX(0);
+            }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 30;
+            }
+            .sidebar-overlay.mobile-open {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
     <div class="flex flex-col md:flex-row min-h-screen">
+        <!-- Hamburger Menu Button (Mobile Only) -->
+        <div class="sidebar-toggle" id="sidebar-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
         <!-- Sidebar Navigation -->
-        <aside class="w-full md:w-64 bg-white shadow-lg md:min-h-screen">
+        <aside class="w-full md:w-64 bg-white shadow-lg md:min-h-screen" id="sidebar">
             <div class="p-6">
                 <h1 class="text-2xl font-bold text-indigo-600">Lab Fisika Teori & Komputasi</h1>
                 <div class="p-6 flex items-center space-x-3">
@@ -61,7 +124,7 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 p-6 md:p-10">
+        <main id="site-main" class="flex-1 p-6 md:p-10">
           <div class="w-full px-0">
             <!-- Header -->
             <header class="flex items-center justify-between mb-8 w-full">
@@ -92,9 +155,38 @@
 
             <!-- Home Section -->
             <section id="home" class="content-section active">
+                <!-- Hero Section Only in Home -->
+                <section class="mb-12 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white rounded-lg overflow-hidden shadow-2xl">
+                    <div class="grid grid-cols-1 md:grid-cols-2 items-center">
+                        <!-- Text Content -->
+                        <div class="p-8 md:p-12 flex flex-col justify-center">
+                            <h2 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+                                Laboratorium Fisika Teori & Komputasi
+                            </h2>
+                            <p class="text-lg text-indigo-100 mb-8">
+                                Pusat penelitian dan pembelajaran fisika modern melalui pendekatan teoritis dan komputasional. Bergabunglah dengan kami untuk mengeksplorasi fenomena alam dan mengembangkan solusi inovatif.
+                            </p>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button class="px-6 py-3 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">
+                                    Pelajari Lebih Lanjut
+                                </button>
+                                <button class="px-6 py-3 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg border border-white/20">
+                                    Hubungi Kami
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Visual Element -->
+                        <div class="hidden md:flex items-center justify-center p-8">
+                            <div class="relative w-64 h-64 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
+                                <div class="text-6xl">🔬</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Quick Access Card -->
-                    <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div class="fade-in-card bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                         <h3 class="font-bold text-lg mb-4">Akses Cepat</h3>
                         <div class="space-y-3">
                             <a href="#" class="nav-link-quick flex items-center text-indigo-600 hover:underline" data-target="list"><i data-lucide="users" class="w-5 h-5 mr-2"></i> Daftar Dosen Lab Fisika Teori & Komputasi</a>
@@ -102,7 +194,7 @@
                         </div>
                     </div>
                     <!-- Announcements Card -->
-                    <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-2">
+                    <div class="fade-in-card bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow lg:col-span-2">
                         <h3 class="font-bold text-lg mb-4">Lab Fisika Teori & Komputasi</h3>
                         <div class="border-l-4 border-yellow-400 pl-4">
                             <p class="font-semibold">Informasi Seputar Lab Fisika Teori & Komputasi</p>
@@ -301,38 +393,44 @@
         </main>
     </div>
 
-    <!-- Tambahkan form login di body (mis. sebelum <main>) -->
-<div id="auth-panel" class="fixed inset-0 flex items-center justify-center bg-black/40 hidden">
+    <!-- Auth Modal (localStorage auth only) -->
+<div id="auth-panel" class="fixed inset-0 flex items-center justify-center bg-black/40 hidden z-50">
   <div class="bg-white p-6 rounded shadow w-96">
     <h3 class="font-semibold mb-4">Masuk / Daftar</h3>
     <input id="email" type="email" placeholder="Email" class="w-full p-2 mb-2 border rounded" />
     <input id="password" type="password" placeholder="Password" class="w-full p-2 mb-4 border rounded" />
     <div class="flex justify-between">
-      <button id="btn-login" class="px-4 py-2 bg-indigo-600 text-white rounded">Masuk</button>
-      <button id="btn-register" class="px-4 py-2 border rounded">Daftar</button>
-      <button id="btn-close-auth" class="px-3 py-2 text-sm text-gray-500">Tutup</button>
+      <button id="btn-login" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors">Masuk</button>
+      <button id="btn-register" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Daftar</button>
+      <button id="btn-close-auth" class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700">Tutup</button>
     </div>
     <p id="auth-message" class="text-sm text-red-500 mt-3 hidden"></p>
   </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<!-- localStorage-based Auth Script (ONLY) -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  // GANTI dengan config Anda dari Firebase console
-  const firebaseConfig = {
-    apiKey: "YOUR_REAL_API_KEY_HERE",
-    authDomain: "your-project-id.firebaseapp.com",
-    projectId: "your-project-id",
-    storageBucket: "your-project-id.appspot.com",
-    messagingSenderId: "SENDER_ID",
-    appId: "APP_ID"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
+  // --- util: SHA-256 hashing ke hex (Web Crypto) ---
+  async function hashHex(str) {
+    const enc = new TextEncoder();
+    const data = enc.encode(str);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
 
-  // UI hooks (pastikan elemen sudah ada)
+  // --- storage helpers ---
+  function loadUsers() {
+    try { return JSON.parse(localStorage.getItem('localUsers') || '{}'); } catch { return {}; }
+  }
+  function saveUsers(users) {
+    localStorage.setItem('localUsers', JSON.stringify(users));
+  }
+  function setAuth(email) { localStorage.setItem('localAuthUser', email); }
+  function clearAuth() { localStorage.removeItem('localAuthUser'); }
+  function getAuth() { return localStorage.getItem('localAuthUser'); }
+
+  // --- UI hooks ---
   const authPanel = document.getElementById('auth-panel');
   const emailEl = document.getElementById('email');
   const passEl = document.getElementById('password');
@@ -346,75 +444,107 @@ document.addEventListener('DOMContentLoaded', function () {
   const authMessage = document.getElementById('auth-message');
 
   if (!authPanel || !authToggleBtn) {
-    console.warn('Elemen auth-panel atau auth-toggle-btn tidak ditemukan. Periksa ID elemen di HTML.');
+    console.warn('Auth elements missing.');
     return;
   }
 
-  function showAuthPanel() {
-    authMessage?.classList.add('hidden');
-    authPanel.classList.remove('hidden');
-    emailEl?.focus();
-  }
-  function hideAuthPanel() {
-    authPanel.classList.add('hidden');
-    if (emailEl) emailEl.value = '';
-    if (passEl) passEl.value = '';
-    authMessage?.classList.add('hidden');
-  }
+  function showAuthPanel() { authMessage.classList.add('hidden'); authPanel.classList.remove('hidden'); emailEl?.focus(); }
+  function hideAuthPanel() { authPanel.classList.add('hidden'); if (emailEl) emailEl.value=''; if (passEl) passEl.value=''; authMessage.classList.add('hidden'); }
+
   btnClose?.addEventListener('click', hideAuthPanel);
+  authToggleBtn.addEventListener('click', () => { if (getAuth()) localSignOut(); else showAuthPanel(); });
 
-  btnLogin?.addEventListener('click', async () => {
-    authMessage?.classList.add('hidden');
-    try {
-      await auth.signInWithEmailAndPassword(emailEl.value.trim(), passEl.value);
-      hideAuthPanel();
-    } catch (err) {
-      authMessage.textContent = err.message || 'Terjadi kesalahan';
-      authMessage.classList.remove('hidden');
-      console.error(err);
-    }
-  });
+  async function localRegister() {
+    const email = emailEl.value.trim().toLowerCase();
+    const pass = passEl.value;
+    if (!email || !pass) { showMsg('Isi email & password'); return; }
+    const users = loadUsers();
+    if (users[email]) { showMsg('Email sudah terdaftar'); return; }
+    const h = await hashHex(pass);
+    users[email] = { hash: h, role: 'Mahasiswa' };
+    saveUsers(users);
+    setAuth(email);
+    updateUI();
+    hideAuthPanel();
+  }
 
-  btnRegister?.addEventListener('click', async () => {
-    authMessage?.classList.add('hidden');
-    try {
-      await auth.createUserWithEmailAndPassword(emailEl.value.trim(), passEl.value);
-      hideAuthPanel();
-    } catch (err) {
-      authMessage.textContent = err.message || 'Terjadi kesalahan';
-      authMessage.classList.remove('hidden');
-      console.error(err);
-    }
-  });
+  async function localSignIn() {
+    const email = emailEl.value.trim().toLowerCase();
+    const pass = passEl.value;
+    if (!email || !pass) { showMsg('Isi email & password'); return; }
+    const users = loadUsers();
+    const user = users[email];
+    if (!user) { showMsg('Akun tidak ditemukan. Daftar terlebih dahulu.'); return; }
+    const h = await hashHex(pass);
+    if (h !== user.hash) { showMsg('Password salah'); return; }
+    setAuth(email);
+    updateUI();
+    hideAuthPanel();
+  }
 
-  // Toggle button: open panel when not logged, sign out when logged
-  authToggleBtn.addEventListener('click', () => {
-    const user = auth.currentUser;
-    if (user) {
-      auth.signOut();
-    } else {
-      showAuthPanel();
-    }
-  });
+  function localSignOut() { clearAuth(); updateUI(); }
 
-  // Update UI on auth state change
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      profileName.textContent = user.displayName || user.email.split('@')[0];
-      profileRole.textContent = 'Mahasiswa / Dosen';
-      profileAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileName.textContent)}&background=EFEFEF&color=333&size=128`;
+  function showMsg(text) { authMessage.textContent = text; authMessage.classList.remove('hidden'); }
+
+  btnRegister?.addEventListener('click', () => { localRegister().catch(e=>{console.error(e); showMsg('Error registrasi');}); });
+  btnLogin?.addEventListener('click', () => { localSignIn().catch(e=>{console.error(e); showMsg('Error login');}); });
+
+  // --- update UI according to auth state ---
+  function updateUI() {
+    const email = getAuth();
+    if (email) {
+      profileName.textContent = email.split('@')[0];
+      const users = loadUsers();
+      profileRole.textContent = (users[email] && users[email].role) ? users[email].role : 'Mahasiswa / Dosen';
+      profileAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileName.textContent)}&background=EFEFEF&color=333&size=128`;
       authToggleBtn.textContent = 'Keluar';
-      authToggleBtn.classList.remove('bg-indigo-600');
-      authToggleBtn.classList.add('bg-red-500');
+      authToggleBtn.classList.remove('bg-indigo-600'); authToggleBtn.classList.add('bg-red-500');
     } else {
       profileName.textContent = 'Tamu';
       profileRole.textContent = '-';
       profileAvatar.src = 'https://placehold.co/40x40/EFEFEF/333?text=NFY';
       authToggleBtn.textContent = 'Masuk';
-      authToggleBtn.classList.remove('bg-red-500');
-      authToggleBtn.classList.add('bg-indigo-600');
+      authToggleBtn.classList.remove('bg-red-500'); authToggleBtn.classList.add('bg-indigo-600');
     }
+
+    // show/hide main content based on auth
+    const siteMain = document.getElementById('site-main');
+    if (siteMain) {
+      if (getAuth()) {
+        siteMain.classList.remove('hidden');
+        authPanel.classList.add('hidden');
+      } else {
+        siteMain.classList.add('hidden');
+      }
+    }
+  }
+
+  // Enforce login immediately at page load
+  function enforceAuth() {
+    if (!getAuth()) {
+      // show modal login
+      showAuthPanel();
+      // hide main content (in case updateUI didn't run yet)
+      const siteMain = document.getElementById('site-main');
+      if (siteMain) siteMain.classList.add('hidden');
+    }
+  }
+
+  // initialize UI
+  updateUI();
+  enforceAuth();
+  
+  // Optional: block navigation clicks when not authenticated
+  document.querySelectorAll('.nav-link, .nav-link-quick').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (!getAuth()) {
+        e.preventDefault();
+        showMsg('Silakan login terlebih dahulu untuk mengakses halaman ini.');
+        showAuthPanel();
+      }
+    });
   });
+  
 });
 </script>
 
@@ -422,6 +552,51 @@ document.addEventListener('DOMContentLoaded', function () {
         document.addEventListener('DOMContentLoaded', function () {
             // Initialize Lucide Icons
             lucide.createIcons();
+
+            // --- Mobile Hamburger Menu ---
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const quickLinks = document.querySelectorAll('.nav-link-quick');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            function toggleSidebar() {
+                sidebar.classList.toggle('mobile-open');
+                sidebarOverlay.classList.toggle('mobile-open');
+            }
+
+            sidebarToggle.addEventListener('click', toggleSidebar);
+
+            // Close sidebar saat klik overlay
+            sidebarOverlay.addEventListener('click', toggleSidebar);
+
+            // Close sidebar saat klik link di nav
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    sidebar.classList.remove('mobile-open');
+                    sidebarOverlay.classList.remove('mobile-open');
+                });
+            });
+
+            // --- Intersection Observer untuk Animasi On-Scroll ---
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // Amati semua elemen dengan class fade-in-card
+            document.querySelectorAll('.fade-in-card').forEach(card => {
+                observer.observe(card);
+            });
 
             // --- Date and Time Display ---
             function updateDate() {
@@ -434,10 +609,6 @@ document.addEventListener('DOMContentLoaded', function () {
             updateDate();
 
             // --- Navigation Logic ---
-            const navLinks = document.querySelectorAll('.nav-link');
-            const quickLinks = document.querySelectorAll('.nav-link-quick');
-            const contentSections = document.querySelectorAll('.content-section');
-
             function switchTab(targetId) {
                 // Hide all sections
                 contentSections.forEach(section => {
@@ -530,21 +701,7 @@ document.addEventListener('DOMContentLoaded', function () {
             createTaskElement("Kuis Pemrograman Web - Materi API");
         });
     </script>
-    <script>
-  // Prefill form untuk testing (HANYA development)
-  document.addEventListener('DOMContentLoaded', () => {
-    const demoEmail = 'test@example.com';
-    const demoPass = 'password123';
-    const emailEl = document.getElementById('email');
-    const passEl = document.getElementById('password');
-    // ubah ke true untuk otomatis membuka panel auth
-    const autoOpen = true;
-    if (emailEl) emailEl.value = demoEmail;
-    if (passEl) passEl.value = demoPass;
-    if (autoOpen) document.getElementById('auth-panel')?.classList.remove('hidden');
-    console.info('Form prefilled with demo credentials (dev only).');
-  });
-</script>
+
 </body>
 </html>
 
