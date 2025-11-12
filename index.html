@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>selamat Datang di Lab Teori & Komputasi</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icon Library: Lucide.dev -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Removed Firebase CDN (using localStorage auth instead) -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .task-item.completed span {
+            text-decoration: line-through;
+            color: #9ca3af; /* gray-400 */
+        }
+        /* Animasi On-Scroll untuk Card */
+        .fade-in-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Mobile Sidebar Styling */
+        .sidebar-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+        }
+        .sidebar-toggle span {
+            width: 25px;
+            height: 3px;
+            background-color: #4f46e5;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            .sidebar-toggle {
+                display: flex;
+            }
+            aside {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 40;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                width: 250px !important;
+            }
+            aside.mobile-open {
+                transform: translateX(0);
+            }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 30;
+            }
+            .sidebar-overlay.mobile-open {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <!-- Hamburger Menu Button (Mobile Only) -->
+        <div class="sidebar-toggle" id="sidebar-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <aside class="w-full md:w-64 bg-white shadow-lg md:min-h-screen" id="sidebar">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-indigo-600">Lab Fisika Teori & Komputasi</h1>
+                <div class="p-6 flex items-center space-x-3">
+    <img src="Logo-Resmi-Unhas-1.png" 
+         alt="Logo UNHAS" 
+         class="w-10 h-10 object-contain">
+                <p class="text-sm text-gray-500">Portal Mahasiswa</p>
+            </div>
+            <nav class="mt-6">
+                <a href="#home" class="nav-link flex items-center px-6 py-3 text-gray-700 bg-gray-200 font-semibold">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5 mr-3"></i>
+                    <span>Beranda</span>
+                </a>
+                <a href="#list" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="users" class="w-10 h-10 mr-3"></i>
+                    <span>Daftar Dosen Lab Fisika Teori & Komputasi</span>
+                </a>
+                <a href="#students" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="graduation-cap" class="w-10 h-10 mr-3"></i>
+                    <span>Daftar Mahasiswa Lab Fisika Teori & Komputasi</span>
+                </a>
+                <a href="#resources" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="book-open" class="w-5 h-5 mr-3"></i>
+                    <span>Sumber Belajar</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main id="site-main" class="flex-1 p-6 md:p-10">
+          <div class="w-full px-0">
+            <!-- Header -->
+            <header class="flex items-center justify-between mb-8 w-full">
+                <!-- kiri: logo + judul -->
+                <div class="flex items-center space-x-4">
+                    <img src="universe.PNG" alt="planetary" class="w-20 h-20 object-cover rounded-full">
+                    <div>
+                        <h2 class="text-3xl font-bold">Selamat Datang Di Lab Fisika Teori & Komputasi</h2>
+                        <p id="current-date" class="text-gray-500 text-sm">Memuat tanggal...</p>
+                    </div>
+                </div>
+
+                <!-- kanan: profil -->
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <!-- id untuk update via JS -->
+                        <p id="profile-name" class="font-semibold text-lg md:text-lg">Tamu</p>
+                        <p id="profile-role" class="text-sm text-gray-500">-</p>
+                    </div>
+                    <img id="profile-avatar"
+                         src="https://placehold.co/40x40/EFEFEF/333?text=NFY"
+                         alt="User Avatar"
+                         class="w-12 h-12 rounded-full border border-gray-300 shadow-sm">
+                    <!-- tombol ini berfungsi: buka panel auth bila belum login, atau logout bila sudah -->
+                    <button id="auth-toggle-btn" class="ml-2 px-3 py-1 text-sm bg-indigo-600 text-white rounded">Masuk</button>
+                </div>
+            </header>
+
+            <!-- Home Section -->
+            <section id="home" class="content-section active">
+                <!-- Hero Section Only in Home -->
+                <section class="mb-12 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white rounded-lg overflow-hidden shadow-2xl">
+                    <div class="grid grid-cols-1 md:grid-cols-2 items-center">
+                        <!-- Text Content -->
+                        <div class="p-8 md:p-12 flex flex-col justify-center">
+                            <h2 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+                                Laboratorium Fisika Teori & Komputasi
+                            </h2>
+                            <p class="text-lg text-indigo-100 mb-8">
+                                Pusat penelitian dan pembelajaran fisika modern melalui pendekatan teoritis dan komputasional. Bergabunglah dengan kami untuk mengeksplorasi fenomena alam dan mengembangkan solusi inovatif.
+                            </p>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button class="px-6 py-3 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">
+                                    Pelajari Lebih Lanjut
+                                </button>
+                                <button class="px-6 py-3 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg border border-white/20">
+                                    Hubungi Kami
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Visual Element -->
+                        <div class="hidden md:flex items-center justify-center p-8">
+                            <div class="relative w-64 h-64 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
+                                <div class="text-6xl">🔬</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Quick Access Card -->
+                    <div class="fade-in-card bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                        <h3 class="font-bold text-lg mb-4">Akses Cepat</h3>
+                        <div class="space-y-3">
+                            <a href="#" class="nav-link-quick flex items-center text-indigo-600 hover:underline" data-target="list"><i data-lucide="users" class="w-5 h-5 mr-2"></i> Daftar Dosen Lab Fisika Teori & Komputasi</a>
+                            <a href="#" class="nav-link-quick flex items-center text-indigo-600 hover:underline" data-target="students"><i data-lucide="graduation-cap" class="w-5 h-5 mr-2"></i> Daftar Mahasiswa Lab Fisika Teori & Komputasi</a>
+                        </div>
+                    </div>
+                    <!-- Announcements Card -->
+                    <div class="fade-in-card bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow lg:col-span-2">
+                        <h3 class="font-bold text-lg mb-4">Lab Fisika Teori & Komputasi</h3>
+                        <div class="border-l-4 border-yellow-400 pl-4">
+                            <p class="font-semibold">Informasi Seputar Lab Fisika Teori & Komputasi</p>
+                            <p class="text-sm text-gray-600">Laboratorium Fisika Teori dan Komputasi merupakan wadah akademik bagi mahasiswa dan peneliti untuk mempelajari serta mengembangkan model-model fisika secara matematis dan komputasional. Fokus utama laboratorium ini adalah memahami fenomena alam mulai dari tingkat mikroskopis hingga kosmologis melalui pendekatan teori dan simulasi numerik. Di dalamnya, mahasiswa dilatih untuk menguasai konsep dasar fisika teoritis, pemrograman ilmiah, serta analisis data komputasi. Kegiatan penelitian meliputi pemodelan sistem dinamik, fisika kuantum, mekanika statistik, hingga kosmologi numerik. Melalui riset dan kolaborasi, laboratorium ini berperan sebagai jembatan antara teori dan eksperimen, serta sebagai pusat inovasi dalam penerapan metode komputasi untuk memecahkan persoalan fisika modern.</p>
+                        </div>  
+                    </div>
+                </div>
+            </section>
+
+<!-- List Dosen Section -->
+<section id="list" class="content-section">
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    <h3 class="font-bold text-2xl mb-6">Daftar Dosen Lab Fisika Teori & Komputasi</h3>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="p-4 font-semibold">No</th>
+            <th class="p-4 font-semibold">Nama Dosen</th>
+            <th class="p-4 font-semibold">Bidang Keahlian</th>
+            <th class="p-4 font-semibold">Email</th>
+            <th class="p-4 font-semibold">Ruang</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b">
+            <td class="p-4">1</td>
+            <td class="p-4 flex items-center space-x-2">
+              <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i>
+              <span>Prof. Dr. rer-nat Wira Bahari Nurdin</span>
+            </td>
+            <td class="p-4">Fisika Teoretis & Kosmologi Relativistik</td>
+            <td class="p-4">wira.nurdin@labfisika.ac.id</td>
+            <td class="p-4">Lab-201</td>
+          </tr>
+          <tr class="border-b bg-gray-50">
+            <td class="p-4">2</td>
+            <td class="p-4 flex items-center space-x-2">
+              <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i>
+              <span>Prof. Dr. Tasrief Tsurungan, M.Sc</span>
+            </td>
+            <td class="p-4">Fisika Komputasi & Sistem Kompleks</td>
+            <td class="p-4">tasrief@labfisika.ac.id</td>
+            <td class="p-4">Lab-203</td>
+          </tr>
+          <tr class="border-b">
+            <td class="p-4">3</td>
+            <td class="p-4 flex items-center space-x-2">
+              <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i>
+              <span>Dr. Azwar Sutiono, M.Si</span>
+            </td>
+            <td class="p-4">Fisika Statistik & Termodinamika Komputasional</td>
+            <td class="p-4">azwar@labfisika.ac.id</td>
+            <td class="p-4">Lab-205</td>
+          </tr>
+          <tr class="border-b bg-gray-50">
+            <td class="p-4">4</td>
+            <td class="p-4 flex items-center space-x-2">
+              <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i>
+              <span>Bayu Dirgantara, SST., Ph.D</span>
+            </td>
+            <td class="p-4">Fisika Kuantum & Simulasi Material</td>
+            <td class="p-4">bayu.dirgantara@labfisika.ac.id</td>
+            <td class="p-4">Lab-206</td>
+          </tr>
+          <tr class="border-b">
+            <td class="p-4">5</td>
+            <td class="p-4 flex items-center space-x-2">
+              <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i>
+              <span>Drs. Bangsawan BJ., M.Si</span>
+            </td>
+            <td class="p-4">Fisika Dasar & Metode Numerik</td>
+            <td class="p-4">bangsawan@labfisika.ac.id</td>
+            <td class="p-4">Lab-208</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<!-- List Mahasiswa Section -->
+<section id="students" class="content-section">
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    <h3 class="font-bold text-2xl mb-6">Daftar Mahasiswa Lab Fisika Teori & Komputasi</h3>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="p-4 font-semibold">No</th>
+            <th class="p-4 font-semibold">Nama Mahasiswa</th>
+            <th class="p-4 font-semibold">NIM</th>
+            <th class="p-4 font-semibold">Topik Penelitian</th>
+            <th class="p-4 font-semibold">Dosen Pembimbing</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b">
+            <td class="p-4">1</td>
+            <td class="p-4 flex items-center space-x-2"><i data-lucide="user" class="w-4 h-4 text-indigo-600"></i><span>Elviana</span></td>
+            <td class="p-4">H021231006</td>
+            <td class="p-4">Analisis Dinamika Termal Sistem Satu Dimensi</td>
+            <td class="p-4">Dr. Azwar Sutiono, M.Si</td>
+          </tr>
+          <tr class="border-b bg-gray-50">
+            <td class="p-4">2</td>
+            <td class="p-4 flex items-center space-x-2"><i data-lucide="user" class="w-4 h-4 text-indigo-600"></i><span>Nurhaliza</span></td>
+            <td class="p-4">H021231008</td>
+            <td class="p-4">Pemodelan Numerik Konduksi Panas Batang Logam</td>
+            <td class="p-4">Drs. Bangsawan BJ., M.Si</td>
+          </tr>
+          <tr class="border-b">
+            <td class="p-4">3</td>
+            <td class="p-4 flex items-center space-x-2"><i data-lucide="user" class="w-4 h-4 text-indigo-600"></i><span>Citra Fikriah Jamal</span></td>
+            <td class="p-4">H021231010</td>
+            <td class="p-4">Simulasi Getaran Harmonik Menggunakan Python</td>
+            <td class="p-4">Prof. Dr. Tasrief Tsurungan, M.Sc</td>
+          </tr>
+          <tr class="border-b bg-gray-50">
+            <td class="p-4">4</td>
+            <td class="p-4 flex items-center space-x-2"><i data-lucide="user" class="w-4 h-4 text-indigo-600"></i><span>Santri</span></td>
+            <td class="p-4">H021231012</td>
+            <td class="p-4">Pemodelan Osilasi Nonlinear Sistem Fisis</td>
+            <td class="p-4">Dr. Azwar Sutiono, M.Si</td>
+          </tr>
+          <tr class="border-b">
+            <td class="p-4">5</td>
+            <td class="p-4 flex items-center space-x-2"><i data-lucide="user" class="w-4 h-4 text-indigo-600"></i><span>Yeni Estefani Parinding</span></td>
+            <td class="p-4">H021231016</td>
+            <td class="p-4">Simulasi Numerik Perpindahan Panas pada Material Komposit</td>
+            <td class="p-4">Prof. Dr. rer-nat Wira Bahari Nurdin</td>
+          </tr>
+          <tr class="border-b bg-gray-50">
+            <td class="p-4">6</td>
+            <td class="p-4 flex items-center space-x-2"><i data-lucide="user" class="w-4 h-4 text-indigo-600"></i><span>Muhammad Ibrahim</span></td>
+            <td class="p-4">H021231026</td>
+            <td class="p-4">Analisis Gelombang Stasioner Menggunakan Metode Beda Hingga</td>
+            <td class="p-4">Bayu Dirgantara, SST., Ph.D</td>
+          </tr>
+          <tr class="border-b">
+            <td class="p-4">7</td>
+            <td class="p-4 flex items-center space-x-2"><i data-lucide="user" class="w-4 h-4 text-indigo-600"></i><span>Deby Lebryawati</span></td>
+            <td class="p-4">H021231046</td>
+            <td class="p-4">Studi Termodinamika Sistem Gas Ideal melalui Komputasi</td>
+            <td class="p-4">Dr. Azwar Sutiono, M.Si</td>
+          </tr>
+          <tr class="border-b bg-gray-50">
+            <td class="p-4">8</td>
+            <td class="p-4 flex items-center space-x-2"><i data-lucide="user" class="w-4 h-4 text-indigo-600"></i><span>Angga Anugrah</span></td>
+            <td class="p-4">H021231024</td>
+            <td class="p-4">Pemodelan Simulasi Gerak Planet dengan Persamaan Newton</td>
+            <td class="p-4">Prof. Dr. Tasrief Tsurungan, M.Sc</td>
+          </tr>
+          <tr class="border-b">
+            <td class="p-4">9</td>
+            <td class="p-4 flex items-center space-x-2"><i data-lucide="user" class="w-4 h-4 text-indigo-600"></i><span>Nur Fadli Yoga</span></td>
+            <td class="p-4">H021231073</td>
+            <td class="p-4">Simulasi Evolusi Alam Semesta Awal menggunakan N-Body Dynamics</td>
+            <td class="p-4">Drs. Bangsawan BJ., M.Si</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+            
+            <!-- Resources Section -->
+            <section id="resources" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="font-bold text-2xl mb-6">Sumber Belajar & Pranala Penting</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <a href="#" class="block p-4 border rounded-lg hover:shadow-lg transition-shadow">
+                            <h4 class="font-semibold text-indigo-700">Perpustakaan Digital Nasional</h4>
+                            <p class="text-sm text-gray-600">Akses jutaan buku, jurnal, dan referensi secara online.</p>
+                        </a>
+                        <a href="#" class="block p-4 border rounded-lg hover:shadow-lg transition-shadow">
+                            <h4 class="font-semibold text-indigo-700">Google Scholar</h4>
+                            <p class="text-sm text-gray-600">Cari literatur akademis dari berbagai disiplin ilmu.</p>
+                        </a>
+                        <a href="#" class="block p-4 border rounded-lg hover:shadow-lg transition-shadow">
+                            <h4 class="font-semibold text-indigo-700">Portal Akademik Kampus</h4>
+                            <p class="text-sm text-gray-600">Akses nilai, KRS, dan informasi akademik lainnya.</p>
+                        </a>
+                        <a href="#" class="block p-4 border rounded-lg hover:shadow-lg transition-shadow">
+                            <h4 class="font-semibold text-indigo-700">Direktori E-Journal</h4>
+                            <p class="text-sm text-gray-600">Kumpulan jurnal elektronik yang dilanggan oleh universitas.</p>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Auth Modal (localStorage auth only) -->
+<div id="auth-panel" class="fixed inset-0 flex items-center justify-center bg-black/40 hidden z-50">
+  <div class="bg-white p-6 rounded shadow w-96">
+    <h3 class="font-semibold mb-4">Masuk / Daftar</h3>
+    <input id="email" type="email" placeholder="Email" class="w-full p-2 mb-2 border rounded" />
+    <input id="password" type="password" placeholder="Password" class="w-full p-2 mb-4 border rounded" />
+    <div class="flex justify-between">
+      <button id="btn-login" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors">Masuk</button>
+      <button id="btn-register" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Daftar</button>
+      <button id="btn-close-auth" class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700">Tutup</button>
+    </div>
+    <p id="auth-message" class="text-sm text-red-500 mt-3 hidden"></p>
+  </div>
+</div>
+
+<!-- localStorage-based Auth Script (ONLY) -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // --- util: SHA-256 hashing ke hex (Web Crypto) ---
+  async function hashHex(str) {
+    const enc = new TextEncoder();
+    const data = enc.encode(str);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // --- storage helpers ---
+  function loadUsers() {
+    try { return JSON.parse(localStorage.getItem('localUsers') || '{}'); } catch { return {}; }
+  }
+  function saveUsers(users) {
+    localStorage.setItem('localUsers', JSON.stringify(users));
+  }
+  function setAuth(email) { localStorage.setItem('localAuthUser', email); }
+  function clearAuth() { localStorage.removeItem('localAuthUser'); }
+  function getAuth() { return localStorage.getItem('localAuthUser'); }
+
+  // --- UI hooks ---
+  const authPanel = document.getElementById('auth-panel');
+  const emailEl = document.getElementById('email');
+  const passEl = document.getElementById('password');
+  const btnLogin = document.getElementById('btn-login');
+  const btnRegister = document.getElementById('btn-register');
+  const btnClose = document.getElementById('btn-close-auth');
+  const authToggleBtn = document.getElementById('auth-toggle-btn');
+  const profileName = document.getElementById('profile-name');
+  const profileRole = document.getElementById('profile-role');
+  const profileAvatar = document.getElementById('profile-avatar');
+  const authMessage = document.getElementById('auth-message');
+
+  if (!authPanel || !authToggleBtn) {
+    console.warn('Auth elements missing.');
+    return;
+  }
+
+  function showAuthPanel() { authMessage.classList.add('hidden'); authPanel.classList.remove('hidden'); emailEl?.focus(); }
+  function hideAuthPanel() { authPanel.classList.add('hidden'); if (emailEl) emailEl.value=''; if (passEl) passEl.value=''; authMessage.classList.add('hidden'); }
+
+  btnClose?.addEventListener('click', hideAuthPanel);
+  authToggleBtn.addEventListener('click', () => { if (getAuth()) localSignOut(); else showAuthPanel(); });
+
+  async function localRegister() {
+    const email = emailEl.value.trim().toLowerCase();
+    const pass = passEl.value;
+    if (!email || !pass) { showMsg('Isi email & password'); return; }
+    const users = loadUsers();
+    if (users[email]) { showMsg('Email sudah terdaftar'); return; }
+    const h = await hashHex(pass);
+    users[email] = { hash: h, role: 'Mahasiswa' };
+    saveUsers(users);
+    setAuth(email);
+    updateUI();
+    hideAuthPanel();
+  }
+
+  async function localSignIn() {
+    const email = emailEl.value.trim().toLowerCase();
+    const pass = passEl.value;
+    if (!email || !pass) { showMsg('Isi email & password'); return; }
+    const users = loadUsers();
+    const user = users[email];
+    if (!user) { showMsg('Akun tidak ditemukan. Daftar terlebih dahulu.'); return; }
+    const h = await hashHex(pass);
+    if (h !== user.hash) { showMsg('Password salah'); return; }
+    setAuth(email);
+    updateUI();
+    hideAuthPanel();
+  }
+
+  function localSignOut() { clearAuth(); updateUI(); }
+
+  function showMsg(text) { authMessage.textContent = text; authMessage.classList.remove('hidden'); }
+
+  btnRegister?.addEventListener('click', () => { localRegister().catch(e=>{console.error(e); showMsg('Error registrasi');}); });
+  btnLogin?.addEventListener('click', () => { localSignIn().catch(e=>{console.error(e); showMsg('Error login');}); });
+
+  // --- update UI according to auth state ---
+  function updateUI() {
+    const email = getAuth();
+    if (email) {
+      profileName.textContent = email.split('@')[0];
+      const users = loadUsers();
+      profileRole.textContent = (users[email] && users[email].role) ? users[email].role : 'Mahasiswa / Dosen';
+      profileAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileName.textContent)}&background=EFEFEF&color=333&size=128`;
+      authToggleBtn.textContent = 'Keluar';
+      authToggleBtn.classList.remove('bg-indigo-600'); authToggleBtn.classList.add('bg-red-500');
+    } else {
+      profileName.textContent = 'Tamu';
+      profileRole.textContent = '-';
+      profileAvatar.src = 'https://placehold.co/40x40/EFEFEF/333?text=NFY';
+      authToggleBtn.textContent = 'Masuk';
+      authToggleBtn.classList.remove('bg-red-500'); authToggleBtn.classList.add('bg-indigo-600');
+    }
+
+    // show/hide main content based on auth
+    const siteMain = document.getElementById('site-main');
+    if (siteMain) {
+      if (getAuth()) {
+        siteMain.classList.remove('hidden');
+        authPanel.classList.add('hidden');
+      } else {
+        siteMain.classList.add('hidden');
+      }
+    }
+  }
+
+  // Enforce login immediately at page load
+  function enforceAuth() {
+    if (!getAuth()) {
+      // show modal login
+      showAuthPanel();
+      // hide main content (in case updateUI didn't run yet)
+      const siteMain = document.getElementById('site-main');
+      if (siteMain) siteMain.classList.add('hidden');
+    }
+  }
+
+  // initialize UI
+  updateUI();
+  enforceAuth();
+  
+  // Optional: block navigation clicks when not authenticated
+  document.querySelectorAll('.nav-link, .nav-link-quick').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (!getAuth()) {
+        e.preventDefault();
+        showMsg('Silakan login terlebih dahulu untuk mengakses halaman ini.');
+        showAuthPanel();
+      }
+    });
+  });
+  
+});
+</script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize Lucide Icons
+            lucide.createIcons();
+
+            // --- Mobile Hamburger Menu ---
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const quickLinks = document.querySelectorAll('.nav-link-quick');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            function toggleSidebar() {
+                sidebar.classList.toggle('mobile-open');
+                sidebarOverlay.classList.toggle('mobile-open');
+            }
+
+            sidebarToggle.addEventListener('click', toggleSidebar);
+
+            // Close sidebar saat klik overlay
+            sidebarOverlay.addEventListener('click', toggleSidebar);
+
+            // Close sidebar saat klik link di nav
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    sidebar.classList.remove('mobile-open');
+                    sidebarOverlay.classList.remove('mobile-open');
+                });
+            });
+
+            // --- Intersection Observer untuk Animasi On-Scroll ---
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // Amati semua elemen dengan class fade-in-card
+            document.querySelectorAll('.fade-in-card').forEach(card => {
+                observer.observe(card);
+            });
+
+            // --- Date and Time Display ---
+            function updateDate() {
+                const dateElement = document.getElementById('current-date');
+                const now = new Date();
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                // Locale 'id-ID' untuk format tanggal Bahasa Indonesia
+                dateElement.textContent = now.toLocaleDateString('id-ID', options);
+            }
+            updateDate();
+
+            // --- Navigation Logic ---
+            function switchTab(targetId) {
+                // Hide all sections
+                contentSections.forEach(section => {
+                    section.classList.remove('active');
+                });
+                 // Deactivate all nav links
+                navLinks.forEach(link => {
+                    link.classList.remove('bg-gray-200', 'font-semibold');
+                    link.classList.add('text-gray-600');
+                });
+
+                // Show the target section
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                }
+
+                // Activate the corresponding nav link
+                const activeLink = document.querySelector(`.nav-link[href="#${targetId}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('bg-gray-200', 'font-semibold');
+                    activeLink.classList.remove('text-gray-600');
+                }
+            }
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    switchTab(targetId);
+                });
+            });
+
+            quickLinks.forEach(link => {
+                 link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.dataset.target;
+                    switchTab(targetId);
+                });
+            });
+
+
+            // --- Task List Logic ---
+            const taskInput = document.getElementById('new-task-input');
+            const addTaskBtn = document.getElementById('add-task-btn');
+            const taskList = document.getElementById('task-list');
+
+            function createTaskElement(taskText) {
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-item flex justify-between items-center p-3 bg-gray-50 rounded-md border';
+
+                const taskContent = document.createElement('span');
+                taskContent.textContent = taskText;
+                taskContent.className = "flex-grow cursor-pointer";
+                taskContent.addEventListener('click', () => {
+                    taskItem.classList.toggle('completed');
+                });
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = `<i data-lucide="trash-2" class="w-5 h-5 text-red-500 hover:text-red-700"></i>`;
+                deleteBtn.className = "ml-4";
+                deleteBtn.addEventListener('click', () => {
+                    taskList.removeChild(taskItem);
+                });
+
+                taskItem.appendChild(taskContent);
+                taskItem.appendChild(deleteBtn);
+                taskList.appendChild(taskItem);
+                lucide.createIcons(); // Re-render icons after adding new one
+            }
+
+            function addTask() {
+                const taskText = taskInput.value.trim();
+                if (taskText !== '') {
+                    createTaskElement(taskText);
+                    taskInput.value = '';
+                    taskInput.focus();
+                }
+            }
+
+            addTaskBtn.addEventListener('click', addTask);
+            taskInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    addTask();
+                }
+            });
+
+            // Add some initial tasks for demonstration
+            createTaskElement("Presentasi Kelompok Jaringan Komputer - Bab 5");
+            createTaskElement("Kuis Pemrograman Web - Materi API");
+        });
+    </script>
+
+</body>
+</html>
+
